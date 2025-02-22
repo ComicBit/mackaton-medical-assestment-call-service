@@ -66,10 +66,16 @@ DATA_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "symptoms-D
 def load_data():
     global total_cooccurs
     DATA_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "symptoms-DO.tsv")
-    print(f"Absolute path to DATA_FILE: {os.path.abspath(DATA_FILE)}")
+    print(f"Checking file at: {os.path.abspath(DATA_FILE)}")
     if not os.path.exists(DATA_FILE):
-        print("Error: TSV file not found!")
+        print("TSV file does not exist at the specified path!")
         return
+    else:
+        print("TSV file found. Reading first few lines...")
+        with open(DATA_FILE, "r", encoding="utf-8") as f:
+            content = f.read(500)  # Read first 500 chars for debugging
+            print(f"File snippet: {content}")
+        f.seek(0)  # Reset file pointer for actual reading
     print(f"Loading data from {DATA_FILE} ...")
     with open(DATA_FILE, "r", encoding="utf-8") as f:
         reader = csv.DictReader(f, delimiter="\t")
@@ -79,6 +85,7 @@ def load_data():
             symptom = row["symptom_name"].strip().lower()
             disease = row["disease_name"].strip().lower()
             cooccurs = int(row.get("cooccurs", 0) or 0)
+            print(f"Row {row_count}: {symptom}, {disease}, {cooccurs}")
             all_symptoms.add(symptom)
             disease_symptom_counts[disease][symptom] += cooccurs
             disease_counts[disease] += cooccurs
