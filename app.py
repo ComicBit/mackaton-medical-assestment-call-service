@@ -226,7 +226,7 @@ def save_summary_logic(summary):
     try:
         with open(filename, "w", encoding="utf-8") as f:
             json.dump(summary, f, indent=4)
-        return {"message": "Summary saved successfully", "filename": filename}
+        return {"message": "Summary saved temporarly", "filename": filename}
     except Exception as e:
         return {"error": str(e)}
 
