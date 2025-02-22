@@ -61,41 +61,39 @@ all_symptoms = set()
 all_diseases_list = []
 total_cooccurs = 0
 
-DATA_FILE = os.path.join(os.path.dirname(__file__), "symptoms-DO.tsv")
+DATA_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "symptoms-DO.tsv")
 
 def load_data():
     global total_cooccurs
-
+    DATA_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "symptoms-DO.tsv")
+    print(f"Absolute path to DATA_FILE: {os.path.abspath(DATA_FILE)}")
+    if not os.path.exists(DATA_FILE):
+        print("Error: TSV file not found!")
+        return
     print(f"Loading data from {DATA_FILE} ...")
     with open(DATA_FILE, "r", encoding="utf-8") as f:
         reader = csv.DictReader(f, delimiter="\t")
+        row_count = 0
         for row in reader:
-            # Convert symptom and disease names to lowercase
+            row_count += 1
             symptom = row["symptom_name"].strip().lower()
-            disease = row["disease_name"].strip().lower()  # if needed
-            try:
-                cooccurs = int(row["cooccurs"].strip())
-            except:
-                cooccurs = 0
-
+            disease = row["disease_name"].strip().lower()
+            cooccurs = int(row.get("cooccurs", 0) or 0)
             all_symptoms.add(symptom)
             disease_symptom_counts[disease][symptom] += cooccurs
             disease_counts[disease] += cooccurs
             total_cooccurs += cooccurs
-
             if disease not in all_diseases_list:
                 all_diseases_list.append(disease)
-
+        print(f"Processed {row_count} rows.")
     print(f"Loaded {len(all_diseases_list)} diseases and {len(all_symptoms)} unique symptoms.")
     print("Computing probabilities with Laplace smoothing...")
-
     num_symptoms = len(all_symptoms)
     for disease, dcount in disease_counts.items():
         for symptom in all_symptoms:
             count = disease_symptom_counts[disease][symptom]
             prob = (count + 1.0) / (dcount + num_symptoms)
             disease_symptom_probs[disease][symptom] = prob
-
     print("Data loading completed.")
 
 def compute_disease_probability(symptom_dict):
