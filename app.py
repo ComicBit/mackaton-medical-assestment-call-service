@@ -61,46 +61,42 @@ all_symptoms = set()
 all_diseases_list = []
 total_cooccurs = 0
 
-DATA_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "symptoms-DO.tsv")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_FILE = os.path.join(BASE_DIR, "symptoms-DO.tsv")
 
 def load_data():
     global total_cooccurs
-    DATA_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "symptoms-DO.tsv")
-    print(f"Checking file at: {os.path.abspath(DATA_FILE)}")
-    if not os.path.exists(DATA_FILE):
-        print("TSV file does not exist at the specified path!")
-        return
-    else:
-        print("TSV file found. Reading first few lines...")
-        with open(DATA_FILE, "r", encoding="utf-8") as f:
-            content = f.read(500)  # Read first 500 chars for debugging
-            print(f"File snippet: {content}")
-        f.seek(0)  # Reset file pointer for actual reading
+
     print(f"Loading data from {DATA_FILE} ...")
     with open(DATA_FILE, "r", encoding="utf-8") as f:
         reader = csv.DictReader(f, delimiter="\t")
-        row_count = 0
         for row in reader:
-            row_count += 1
+            # Convert symptom and disease names to lowercase
             symptom = row["symptom_name"].strip().lower()
-            disease = row["disease_name"].strip().lower()
-            cooccurs = int(row.get("cooccurs", 0) or 0)
-            print(f"Row {row_count}: {symptom}, {disease}, {cooccurs}")
+            disease = row["disease_name"].strip().lower()  # if needed
+            try:
+                cooccurs = int(row["cooccurs"].strip())
+            except:
+                cooccurs = 0
+
             all_symptoms.add(symptom)
             disease_symptom_counts[disease][symptom] += cooccurs
             disease_counts[disease] += cooccurs
             total_cooccurs += cooccurs
+
             if disease not in all_diseases_list:
                 all_diseases_list.append(disease)
-        print(f"Processed {row_count} rows.")
+
     print(f"Loaded {len(all_diseases_list)} diseases and {len(all_symptoms)} unique symptoms.")
     print("Computing probabilities with Laplace smoothing...")
+
     num_symptoms = len(all_symptoms)
     for disease, dcount in disease_counts.items():
         for symptom in all_symptoms:
             count = disease_symptom_counts[disease][symptom]
             prob = (count + 1.0) / (dcount + num_symptoms)
             disease_symptom_probs[disease][symptom] = prob
+
     print("Data loading completed.")
 
 def compute_disease_probability(symptom_dict):
@@ -226,7 +222,7 @@ def save_summary_logic(summary):
     try:
         with open(filename, "w", encoding="utf-8") as f:
             json.dump(summary, f, indent=4)
-        return {"message": "Summary saved temporarly", "filename": filename}
+        return {"message": "Summary saved successfully", "filename": filename}
     except Exception as e:
         return {"error": str(e)}
 
@@ -327,8 +323,7 @@ def handle_tool_webhook():
 ##############################################################################
 # 7) App Entry Point
 ##############################################################################
+load_data() 
 
 if __name__ == "__main__":
-    load_data()  # load data for diagnosis tools
-    port = int(os.environ.get("PORT", 8000))
-    app.run(debug=False, host="0.0.0.0", port=port)
+    app.run(debug=True)
