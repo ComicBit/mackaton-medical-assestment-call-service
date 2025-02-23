@@ -1,4 +1,4 @@
-# Presentazione Didattica Conferenza di Ricerca Gradienti Professionali Rosa di ComicBit
+# InternistAI
 
 This repository implements **InternistAI**, an AI-driven solution designed to streamline the medical visit process by conducting initial evaluations, matching patient symptoms with verified medical data, and connecting users with the right specialist. The goal is to reduce unnecessary visits, prioritize urgent cases, and help address the growing doctor shortage.
 
